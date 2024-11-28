@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subject Submission</title>
+</head>
+<body>
+    <h1>Submit a Subject ID</h1>
+    <form id="subjectForm">
+        <label for="subjectId">Subject ID:</label>
+        <input type="text" id="subjectId" name="subjectId" required>
+        <button type="submit">Submit</button>
+    </form>
+    <p id="responseMessage"></p>
+
+    <script>
+        const form = document.getElementById('subjectForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const subjectId = document.getElementById('subjectId').value;
+            const responseMessage = document.getElementById('responseMessage');
+
+            try {
+                const response = await fetch('https://api.github.com/repos/<username>/<repository>/contents/subjects.txt', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': 'token <your-personal-access-token>',
+                        'Accept': 'application/vnd.github.v3+json',
+                    },
+                    body: JSON.stringify({
+                        message: `Add subject ID: ${subjectId}`,
+                        content: btoa(`${subjectId}\n`),
+                        sha: '<current-sha>',
+                    }),
+                });
+
+                if (response.ok) {
+                    responseMessage.textContent = 'Subject ID added successfully!';
+                } else {
+                    const error = await response.json();
+                    responseMessage.textContent = `Error: ${error.message}`;
+                }
+            } catch (error) {
+                responseMessage.textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
+
