@@ -28,9 +28,9 @@
             const responseMessage = document.getElementById('responseMessage');
 
             // GitHub API info
-            const owner = 'ataha24'; // Replace with your GitHub username
-            const repo = 'LHSCproc';       // Replace with your repository name
-            const filePath = 'subjects.txt';        // File to append the subject ID to
+            const owner = 'ataha24'; 
+            const repo = 'LHSCproc';     
+            const filePath = 'subjects.txt';     
             const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
 
             try {
@@ -47,8 +47,8 @@
 
                 if (getFileResponse.ok) {
                     const fileData = await getFileResponse.json();
-                    sha = fileData.sha; // Current file SHA
-                    existingContent = atob(fileData.content); // Decode base64 content
+                    sha = fileData.sha;
+                    existingContent = atob(fileData.content); 
                 }
 
                 // Append new subject ID
