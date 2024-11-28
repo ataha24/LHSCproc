@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subject Submission</title>
+    <title>Submit Subject ID</title>
 </head>
 <body>
     <h1>Submit a Subject ID</h1>
     <form id="subjectForm">
         <label for="subjectId">Subject ID:</label>
         <input type="text" id="subjectId" name="subjectId" required>
+        <br>
+        <label for="token">GitHub Token:</label>
+        <input type="password" id="token" name="token" required>
+        <br>
         <button type="submit">Submit</button>
     </form>
     <p id="responseMessage"></p>
@@ -18,28 +22,58 @@
         const form = document.getElementById('subjectForm');
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+
             const subjectId = document.getElementById('subjectId').value;
+            const token = document.getElementById('token').value;
             const responseMessage = document.getElementById('responseMessage');
 
+            // GitHub API info
+            const owner = 'ataha24'; // Replace with your GitHub username
+            const repo = 'LHSCproc';       // Replace with your repository name
+            const filePath = 'subjects.txt';        // File to append the subject ID to
+            const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
+
             try {
-                const response = await fetch('https://api.github.com/repos/<username>/<repository>/contents/subjects.txt', {
+                // Fetch current file data
+                const getFileResponse = await fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                    },
+                });
+
+                let sha = null;
+                let existingContent = '';
+
+                if (getFileResponse.ok) {
+                    const fileData = await getFileResponse.json();
+                    sha = fileData.sha; // Current file SHA
+                    existingContent = atob(fileData.content); // Decode base64 content
+                }
+
+                // Append new subject ID
+                const updatedContent = existingContent + `${subjectId}\n`;
+                const base64Content = btoa(updatedContent); // Encode content in base64
+
+                // Update the file
+                const updateResponse = await fetch(apiUrl, {
                     method: 'PUT',
                     headers: {
-                        'Authorization': 'token <your-personal-access-token>',
+                        'Authorization': `token ${token}`,
                         'Accept': 'application/vnd.github.v3+json',
                     },
                     body: JSON.stringify({
                         message: `Add subject ID: ${subjectId}`,
-                        content: btoa(`${subjectId}\n`),
-                        sha: '<current-sha>',
+                        content: base64Content,
+                        sha: sha,
                     }),
                 });
 
-                if (response.ok) {
+                if (updateResponse.ok) {
                     responseMessage.textContent = 'Subject ID added successfully!';
                 } else {
-                    const error = await response.json();
-                    responseMessage.textContent = `Error: ${error.message}`;
+                    const errorData = await updateResponse.json();
+                    responseMessage.textContent = `Error: ${errorData.message}`;
                 }
             } catch (error) {
                 responseMessage.textContent = `Error: ${error.message}`;
@@ -48,4 +82,3 @@
     </script>
 </body>
 </html>
-
